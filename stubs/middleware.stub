@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Illuminate\Http\Request;
+use NLD\Momentum\Middleware\HandleInertiaRequests as HandleMomentumRequests;
+
+class {{ class }} extends HandleMomentumRequests
+{
+    /** Define the props that are shared by default. */
+    public function share(Request $request): array
+    {
+        return [
+            ...parent::share($request),
+        ];
+    }
+}
