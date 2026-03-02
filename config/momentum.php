@@ -56,4 +56,16 @@ return [
         'back' => 'back',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Resource Wrapping
+    |--------------------------------------------------------------------------
+    |
+    | When true, JSON resources are returned without Laravel's 'data' wrapper.
+    | Recommended for Inertia/SPA applications.
+    |
+    */
+
+    'resource_wrapping' => true,
+
 ];

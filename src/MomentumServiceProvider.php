@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NLD\Momentum;
 
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 /**
@@ -27,6 +28,10 @@ class MomentumServiceProvider extends BaseServiceProvider
         $this->publishes([
             __DIR__.'/../config/momentum.php' => config_path('momentum.php'),
         ], 'momentum-config');
+
+        if ($this->app['config']->get('momentum.resource_wrapping', true)) {
+            JsonResource::withoutWrapping();
+        }
 
         $this->registerConsoleCommands();
     }
