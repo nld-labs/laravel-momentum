@@ -11,7 +11,7 @@ class TestResource extends JsonResource
     use ResourceTransformer;
 
     public $fakeBuildOptions = [
-        'append' => ['test' => 'value'],
+        'extra' => ['test' => 'value'],
     ];
 
     public function toArray(Request $request): array

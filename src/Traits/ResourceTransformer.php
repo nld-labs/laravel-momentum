@@ -28,6 +28,18 @@ trait ResourceTransformer
 
     /**
      * Format transformed data with optional field and relation controls.
+     *
+     * @param array{
+     *     pick?: list<string>,
+     *     hide?: list<string>,
+     *     extra?: array|callable,
+     *     relations?: array<string, class-string|\Closure>
+     * } $options
+     * @return array
+     *
+     * When 'extra' is a callable, it receives ($this->resource) and must return an array.
+     * When 'relations' value is a callable, it receives ($this->resource, $relationValue) and
+     * must return an already-serialised array (no further wrapping applied).
      */
     protected function formatData(Request $request, array $options = []): array
     {
@@ -37,24 +49,30 @@ trait ResourceTransformer
 
         $data = parent::toArray($request);
 
-        if (array_key_exists('only', $options)) {
-            $data = Arr::only($data, $options['only']);
+        if (isset($options['pick'])) {
+            $data = Arr::only($data, $options['pick']);
         }
 
-        if (array_key_exists('except', $options)) {
-            $data = Arr::except($data, $options['except']);
+        if (isset($options['hide'])) {
+            $data = Arr::except($data, $options['hide']);
         }
 
-        if (array_key_exists('append', $options)) {
-            $data = [...$data, ...$options['append']];
+        if (isset($options['extra'])) {
+            $extra = $options['extra'];
+            if (is_callable($extra)) {
+                $extra = $extra($this->resource);
+            }
+            $data = [...$data, ...$extra];
         }
 
-        if (array_key_exists('loaded', $options)) {
-            foreach ($options['loaded'] as $relation => $resource) {
+        if (isset($options['relations'])) {
+            foreach ($options['relations'] as $relation => $resource) {
                 if ($this->relationLoaded($relation)) {
                     $related = $this->{$relation};
 
-                    if ($related instanceof Collection) {
+                    if (is_callable($resource)) {
+                        $data[$relation] = $resource($this->resource, $related);
+                    } elseif ($related instanceof Collection) {
                         $data[$relation] = $resource::collection($related);
                     } else {
                         $data[$relation] = $resource::make($related);
