@@ -12,7 +12,7 @@ class RelatedResource extends JsonResource
 
     public function toArray(Request $request): array
     {
-        return $this->formatData($request, [
+        return $this->resolveData($request, [
             'pick' => ['id', 'name'],
         ]);
     }

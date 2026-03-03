@@ -27,21 +27,16 @@ trait ResourceTransformer
     }
 
     /**
-     * Format transformed data with optional field and relation controls.
+     * Resolve transformed data with optional field and relation controls.
      *
      * @param array{
      *     pick?: list<string>,
      *     hide?: list<string>,
-     *     extra?: array|callable,
+     *     extra?: array<string, mixed|\Closure>,
      *     relations?: array<string, class-string|\Closure>
      * } $options
-     * @return array
-     *
-     * When 'extra' is a callable, it receives ($this->resource) and must return an array.
-     * When 'relations' value is a callable, it receives ($this->resource, $relationValue) and
-     * must return an already-serialised array (no further wrapping applied).
      */
-    protected function formatData(Request $request, array $options = []): array
+    protected function resolveData(Request $request, array $options = []): array
     {
         if ($this->resource === null) {
             return [];
@@ -59,10 +54,9 @@ trait ResourceTransformer
 
         if (isset($options['extra'])) {
             $extra = $options['extra'];
-            if (is_callable($extra)) {
-                $extra = $extra($this->resource);
+            foreach ($extra as $key => $value) {
+                $data[$key] = is_callable($value) ? $value($this->resource) : $value;
             }
-            $data = [...$data, ...$extra];
         }
 
         if (isset($options['relations'])) {

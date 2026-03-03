@@ -19,7 +19,7 @@ describe('paginated()', function () {
     });
 });
 
-describe('formatData()', function () {
+describe('resolveData()', function () {
     beforeEach(function () {
         $this->model = TestModel::create(['name' => 'build']);
         $this->resource = TestResource::make($this->model);
@@ -63,6 +63,61 @@ describe('formatData()', function () {
             ]);
     });
 
+    describe('extra option with per-value callables', function () {
+        it('invokes callable extra value with resource and uses returned value', function () {
+            $this->resource->fakeBuildOptions = [
+                'extra' => ['computed' => fn ($resource) => $resource->name.'_computed'],
+            ];
+            $value = $this->resource->toArray(request()->create('x'));
+
+            expect($value)
+                ->toHaveKey('computed')
+                ->computed->toBe('build_computed');
+        });
+
+        it('callable extra value receives correct resource instance', function () {
+            $receivedResource = null;
+            $this->resource->fakeBuildOptions = [
+                'extra' => ['key' => function ($resource) use (&$receivedResource) {
+                    $receivedResource = $resource;
+
+                    return 'value';
+                }],
+            ];
+            $this->resource->toArray(request()->create('x'));
+
+            expect($receivedResource)->toBe($this->model);
+        });
+
+        it('handles mixed static and callable values in same extra array', function () {
+            $this->resource->fakeBuildOptions = [
+                'extra' => [
+                    'static' => 'hello',
+                    'computed' => fn ($r) => strtoupper($r->name),
+                ],
+            ];
+            $value = $this->resource->toArray(request()->create('x'));
+
+            expect($value)
+                ->static->toBe('hello')
+                ->computed->toBe('BUILD');
+        });
+
+        it('resolves multiple callable values independently', function () {
+            $this->resource->fakeBuildOptions = [
+                'extra' => [
+                    'first' => fn ($r) => $r->name.'_first',
+                    'second' => fn ($r) => $r->name.'_second',
+                ],
+            ];
+            $value = $this->resource->toArray(request()->create('x'));
+
+            expect($value)
+                ->first->toBe('build_first')
+                ->second->toBe('build_second');
+        });
+    });
+
     it('ignores loaded values if relationship is not loaded', function () {
         $this->model->items()->create(['name' => 'related']);
         $this->resource->fakeBuildOptions = ['relations' => ['items' => TestResource::class]];
@@ -98,33 +153,6 @@ describe('formatData()', function () {
                 'id' => 2,
                 'parent_id' => 1,
             ]);
-    });
-
-    describe('callable extra option', function () {
-        it('invokes callable extra with resource and merges returned array', function () {
-            $this->resource->fakeBuildOptions = [
-                'extra' => fn ($resource) => ['computed' => $resource->name.'_computed'],
-            ];
-            $value = $this->resource->toArray(request()->create('x'));
-
-            expect($value)
-                ->toHaveKey('computed')
-                ->computed->toBe('build_computed');
-        });
-
-        it('callable extra receives correct resource instance', function () {
-            $receivedResource = null;
-            $this->resource->fakeBuildOptions = [
-                'extra' => function ($resource) use (&$receivedResource) {
-                    $receivedResource = $resource;
-
-                    return [];
-                },
-            ];
-            $this->resource->toArray(request()->create('x'));
-
-            expect($receivedResource)->toBe($this->model);
-        });
     });
 
     describe('callable relations option', function () {
