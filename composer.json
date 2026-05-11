@@ -3,7 +3,7 @@
     "description": "A Laravel library to streamline Inertia.js application development.",
     "type": "library",
     "license": "MIT",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "keywords": [
         "laravel",
         "inertia"
@@ -27,13 +27,13 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=8.2",
-        "illuminate/database": "^11.0|^12.0",
-        "inertiajs/inertia-laravel": "^2.0"
+        "illuminate/database": "^11.0|^12.0|^13.0",
+        "inertiajs/inertia-laravel": "^3.0"
     },
     "require-dev": {
         "pestphp/pest": "^4.3",
         "laravel/pint": "^1.27",
-        "orchestra/testbench": "^10.0"
+        "orchestra/testbench": "^11.0"
     },
     "config": {
         "allow-plugins": {
